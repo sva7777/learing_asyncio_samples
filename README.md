@@ -1,2 +1,2 @@
-# learing_asyncio_samples
-Изучаю asyncio
+# AsyncIO
+каталог basic_samples
