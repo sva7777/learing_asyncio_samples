@@ -1,17 +1,16 @@
 import socket
-from pprint import pprint
 import signal
-import sys
+import time
 
-sock = None
-
+import logging
+from sys import stdout
 
 def main():
 
     def int_handler(signum, frame):
-        pprint("int_handler. recieved signal = {}".format(signum))
+        logger.debug("int_handler. Received signal = {}".format(signum))
         if sock:
-            pprint("Gracefully close socket")
+            logger.debug("Gracefully close socket")
             sock.close()
             exit(-1)
 
@@ -25,7 +24,7 @@ def main():
         sock.connect(('localhost', 55000))
     except Exception as e:
         sock.close()
-        pprint("Can't connect. Error message is: {}".format(e) )
+        logger.debug("Can't connect. Error message is: {}".format(e) )
         exit(-1)
 
     signal.signal(signal.SIGINT, int_handler)
@@ -37,21 +36,33 @@ def main():
             # отправляем сообщение
             sock.send(bytes('Hello, world', encoding = 'UTF-8'))
         except Exception as e:
-            pprint("Excepetion when send data = {}".format(e))
+            logger.debug("Excepetion when send data = {}".format(e))
             break
 
         try:
             # читаем ответ от серверного сокета
             data = sock.recv(1024).decode('utf8')
         except Exception as e:
-            pprint("Excepetion when recv data = {}".format(e))
+            logger.debug("Excepetion when recv data = {}".format(e))
             break
-        #pprint(data)
-        #sleep(1)
+        logger.debug(data)
+        time.sleep(0.1)
 
     # закрываем соединение
     sock.close()
 
 
 if __name__ == "__main__":
+    # Define logger
+    logger = logging.getLogger('mylogger')
+
+    logger.setLevel(logging.DEBUG)  # set logger level
+    logFormatter = logging.Formatter \
+        ("%(name)-12s %(asctime)s %(levelname)-8s %(filename)s:%(funcName)s %(message)s")
+    consoleHandler = logging.StreamHandler(stdout)  # set streamhandler to stdout
+    consoleHandler.setFormatter(logFormatter)
+    logger.addHandler(consoleHandler)
+
     main()
+
+    logger.debug("Exit client")

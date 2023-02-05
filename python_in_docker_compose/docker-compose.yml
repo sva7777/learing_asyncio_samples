@@ -1,0 +1,12 @@
+version: '3'
+
+
+services:
+    socket_server:
+        build: ./Server
+
+
+    client1:
+        build: ./Client
+
+
