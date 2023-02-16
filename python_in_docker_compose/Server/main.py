@@ -4,6 +4,7 @@ import os
 import signal
 import functools
 
+
 import logging
 from sys import stdout
 
@@ -54,15 +55,18 @@ async def shutdown(sig, loop):
     loop.stop()
 
 
-async def run_server():
+async def run_server(host, port, conn_count):
 
     # run_server is self courotine
     try:
         server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-        # ToDo: make host and port configurable from docker compose
-        server.bind(('localhost', 55000))
-        server.listen(10)
+        logger.debug("hostname: {}".format(host))
+        logger.debug("port: {}".format(port))
+        logger.debug("conn_count: {}".format(conn_count))
+
+        server.bind((host, port))
+        server.listen(conn_count)
         server.setblocking(False)
 
         loop = asyncio.get_event_loop()
@@ -99,12 +103,31 @@ if __name__ == "__main__":
 
     logger.debug("Start server")
 
+    port = os.getenv('port_to_listen')
+    if not port:
+        logger.debug("env variable port_to_listen is not specified. 55000 is used" )
+        port = 55000
+    port= int(port)
+
+    host = os.getenv('server_host')
+    if not host:
+        logger.debug("env variable server_host is not specified. localhost is used" )
+        host = "localhost"
+
+
+    conn_count = os.getenv('conn_count')
+    if not conn_count:
+        logger.debug("env variable conn_count is not specified. 10 is used" )
+        conn_count = 10
+    conn_count=int(conn_count)
+
+
     # clear log file if it exists
     if os.path.exists(accept_log_file_name):
         os.remove(accept_log_file_name)
 
     try:
-        asyncio.run(run_server())
+        asyncio.run(run_server(host, port, conn_count))
     finally:
         logger.debug("End of program")
 

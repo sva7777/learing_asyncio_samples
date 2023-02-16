@@ -1,12 +1,35 @@
 version: '3'
 
+networks:
+    socket_network:
+        driver: bridge
 
 services:
     socket_server:
         build: ./Server
+        restart: unless-stopped
+        container_name: socket_server
+        environment:
+            - port_to_listen=55000
+            - server_host="0.0.0.0"
+            - conn_count=10
+        ports:
+            - "55000:55000"
+        networks:
+            - socket_network
+
 
 
     client1:
         build: ./Client
+        restart: unless-stopped
+        container_name: socket_client1
+        environment:
+            - server_port=55000
+            - server_host="socket_server"
+        links:
+            - socket_server
+        networks:
+            - socket_network
 
 

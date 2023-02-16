@@ -1,11 +1,12 @@
 import socket
 import signal
 import time
+import os
 
 import logging
 from sys import stdout
 
-def main():
+def main(server_host, port):
 
     def int_handler(signum, frame):
         logger.debug("int_handler. Received signal = {}".format(signum))
@@ -19,9 +20,13 @@ def main():
     # set time out for connection(in seconds)
     sock.settimeout(20)
 
+    logger.debug("server_host: {}".format(server_host))
+    logger.debug("server_port: {}".format(port))
+
+
     # подключемся к серверному сокету
     try:
-        sock.connect(('localhost', 55000))
+        sock.connect((server_host, port))
     except Exception as e:
         sock.close()
         logger.debug("Can't connect. Error message is: {}".format(e) )
@@ -63,6 +68,19 @@ if __name__ == "__main__":
     consoleHandler.setFormatter(logFormatter)
     logger.addHandler(consoleHandler)
 
-    main()
+    logger.debug("Client is started")
+
+    port = os.getenv('server_port')
+    if not port:
+        logger.debug("env variable server_port is not specified. 55000 is used" )
+        port = 55000
+    port = int(port)
+
+    server_host = os.getenv('server_host')
+    if not server_host:
+        logger.debug("env variable server_host is not specified. localhost is used")
+        server_host = "localhost"
+
+    main(server_host, port)
 
     logger.debug("Exit client")
