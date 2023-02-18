@@ -1,10 +1,11 @@
-FROM python:3.8-alpine
-RUN apk update
+FROM python:3.8-alpine as base
 RUN mkdir /app
 ADD main.py /app
-ADD  requirements.txt /app
 WORKDIR /app
+CMD ["python","main.py"]
 
-RUN pip3 install -r requirements.txt
-CMD ["python3","main.py"]
+FROM base as debug
+RUN pip3 install debugpy
+
+FROM base as development
 

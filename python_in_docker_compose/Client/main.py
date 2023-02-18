@@ -6,12 +6,13 @@ import os
 import logging
 from sys import stdout
 
+
 def main(server_host, port):
 
     def int_handler(signum, frame):
-        logger.debug("int_handler. Received signal = {}".format(signum))
+        logger.error("int_handler. Received signal = {}".format(signum))
         if sock:
-            logger.debug("Gracefully close socket")
+            logger.error("Gracefully close socket")
             sock.close()
             exit(-1)
 
@@ -20,8 +21,8 @@ def main(server_host, port):
     # set time out for connection(in seconds)
     sock.settimeout(20)
 
-    logger.debug("server_host: {}".format(server_host))
-    logger.debug("server_port: {}".format(port))
+    logger.info("server_host: {}".format(server_host))
+    logger.info("server_port: {}".format(port))
 
 
     # подключемся к серверному сокету
@@ -29,7 +30,7 @@ def main(server_host, port):
         sock.connect((server_host, port))
     except Exception as e:
         sock.close()
-        logger.debug("Can't connect. Error message is: {}".format(e) )
+        logger.error("Can't connect. Error message is: {}".format(e) )
         exit(-1)
 
     signal.signal(signal.SIGINT, int_handler)
@@ -41,46 +42,68 @@ def main(server_host, port):
             # отправляем сообщение
             sock.send(bytes('Hello, world', encoding = 'UTF-8'))
         except Exception as e:
-            logger.debug("Excepetion when send data = {}".format(e))
+            logger.error("Exception when send data = {}".format(e))
             break
 
         try:
             # читаем ответ от серверного сокета
             data = sock.recv(1024).decode('utf8')
         except Exception as e:
-            logger.debug("Excepetion when recv data = {}".format(e))
+            logger.error("Exception when recv data = {}".format(e))
             break
         logger.debug(data)
-        time.sleep(0.1)
+
+        # ToDo: read value from env variable?
+        time.sleep(0.5)
 
     # закрываем соединение
     sock.close()
 
 
 if __name__ == "__main__":
+
+    debug_port = os.getenv('debug_port')
+    if debug_port:
+        import debugpy
+        debugpy.listen(("0.0.0.0", int(debug_port)))
+
+        wait_for_debuger_connection = os.getenv('wait_for_debuger_connection')
+        if wait_for_debuger_connection and int(wait_for_debuger_connection) != 0:
+            debugpy.wait_for_client()
+
+    logger_level = os.getenv('logger_level')
+    if not logger_level:
+        logger_level = logging.DEBUG
+
     # Define logger
     logger = logging.getLogger('mylogger')
 
-    logger.setLevel(logging.DEBUG)  # set logger level
+    try:
+        logger.setLevel(logger_level)  # set logger level
+    except Exception as e:
+        logger.setLevel(logging.WARNING)
+
     logFormatter = logging.Formatter \
         ("%(name)-12s %(asctime)s %(levelname)-8s %(filename)s:%(funcName)s %(message)s")
     consoleHandler = logging.StreamHandler(stdout)  # set streamhandler to stdout
     consoleHandler.setFormatter(logFormatter)
     logger.addHandler(consoleHandler)
 
-    logger.debug("Client is started")
+    logger.info("Client is started")
+
 
     port = os.getenv('server_port')
     if not port:
-        logger.debug("env variable server_port is not specified. 55000 is used" )
+        logger.warning("env variable server_port is not specified. 55000 is used" )
         port = 55000
     port = int(port)
 
     server_host = os.getenv('server_host')
     if not server_host:
-        logger.debug("env variable server_host is not specified. localhost is used")
-        server_host = "localhost"
+        logger.warning("env variable server_host is not specified. localhost is used")
+        server_host = "socket_server"
+
 
     main(server_host, port)
 
-    logger.debug("Exit client")
+    logger.info("Exit client")

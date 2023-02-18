@@ -8,7 +8,6 @@ import functools
 import logging
 from sys import stdout
 
-
 accept_log_file_name = "accept.log"
 
 async def handle_client(client):
@@ -22,11 +21,11 @@ async def handle_client(client):
             try:
                 request = (await loop.sock_recv(client, 255)).decode('utf8')
             except Exception as e:
-                logger.debug("Problem with sock_recv ={}".format(e))
+                logger.error("Problem with sock_recv ={}".format(e))
                 break
 
             if not request:
-                logger.debug("received EOF")
+                logger.info("received EOF")
                 break  # EOF - closed by client
 
             logger.debug("request = {}".format(request))
@@ -34,24 +33,24 @@ async def handle_client(client):
             try:
                 await loop.sock_sendall(client, response.encode('utf8'))
             except Exception as e:
-                logger.debug("Problem with sendall ={}".format(e))
+                logger.error("Problem with sendall ={}".format(e))
                 break
 
     except asyncio.CancelledError:
-        logger.debug("Courotine for hadle client {} was cancelled".format(client))
+        logger.error("Courotine for hadle client {} was cancelled".format(client))
 
     logger.debug("Close socket")
     client.close()
 
 
 async def shutdown(sig, loop):
-    logger.debug('Received signal {0}'.format(sig.name))
+    logger.error('Received signal {0}'.format(sig.name))
 
     tasks = [task for task in asyncio.all_tasks() if task is not
              asyncio.current_task()]
     list(map(lambda task: task.cancel(), tasks))
     results = await asyncio.gather(*tasks, return_exceptions=True)
-    logger.debug('finished awaiting cancelled tasks, results: {0}'.format(results))
+    logger.info('finished awaiting cancelled tasks, results: {0}'.format(results))
     loop.stop()
 
 
@@ -61,9 +60,9 @@ async def run_server(host, port, conn_count):
     try:
         server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-        logger.debug("hostname: {}".format(host))
-        logger.debug("port: {}".format(port))
-        logger.debug("conn_count: {}".format(conn_count))
+        logger.info("hostname: {}".format(host))
+        logger.info("port: {}".format(port))
+        logger.info("conn_count: {}".format(conn_count))
 
         server.bind((host, port))
         server.listen(conn_count)
@@ -82,7 +81,7 @@ async def run_server(host, port, conn_count):
                 file.write("New client from address = {}\n".format(address))
             loop.create_task(handle_client(client))
     except asyncio.CancelledError:
-        logger.debug("Courotine run_server was cancelled")
+        logger.error("Courotine run_server was cancelled")
         server.close()
 
 
@@ -90,37 +89,53 @@ async def run_server(host, port, conn_count):
 
 if __name__ == "__main__":
 
+    debug_port = os.getenv('debug_port')
+    if debug_port:
+        import debugpy
+        debugpy.listen(("0.0.0.0", int(debug_port)))
+
+        wait_for_debuger_connection = os.getenv('wait_for_debuger_connection')
+        if wait_for_debuger_connection and int(wait_for_debuger_connection) != 0:
+            debugpy.wait_for_client()
+
+    logger_level = os.getenv('logger_level')
+    if not logger_level:
+        logger_level = logging.DEBUG
+
     # Define logger
     logger = logging.getLogger('mylogger')
 
-    logger.setLevel(logging.DEBUG)  # set logger level
+    try:
+        logger.setLevel(logger_level)  # set logger level
+    except Exception as e:
+        logger.setLevel(logging.DEBUG)
+
     logFormatter = logging.Formatter \
         ("%(name)-12s %(asctime)s %(levelname)-8s %(filename)s:%(funcName)s %(message)s")
     consoleHandler = logging.StreamHandler(stdout)  # set streamhandler to stdout
     consoleHandler.setFormatter(logFormatter)
     logger.addHandler(consoleHandler)
 
-
-    logger.debug("Start server")
+    logger.info("Start server")
 
     port = os.getenv('port_to_listen')
     if not port:
-        logger.debug("env variable port_to_listen is not specified. 55000 is used" )
+        logger.warning("env variable port_to_listen is not specified. 55000 is used" )
         port = 55000
     port= int(port)
 
     host = os.getenv('server_host')
     if not host:
-        logger.debug("env variable server_host is not specified. localhost is used" )
+        logger.warning("env variable server_host is not specified. localhost is used" )
         host = "localhost"
 
 
     conn_count = os.getenv('conn_count')
     if not conn_count:
-        logger.debug("env variable conn_count is not specified. 10 is used" )
+        logger.warning("env variable conn_count is not specified. 10 is used" )
         conn_count = 10
-    conn_count=int(conn_count)
-
+    else:
+        conn_count = int(conn_count)
 
     # clear log file if it exists
     if os.path.exists(accept_log_file_name):
@@ -129,5 +144,5 @@ if __name__ == "__main__":
     try:
         asyncio.run(run_server(host, port, conn_count))
     finally:
-        logger.debug("End of program")
+        logger.info("End of program")
 
