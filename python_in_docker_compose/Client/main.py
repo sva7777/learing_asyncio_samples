@@ -11,10 +11,11 @@ def main(server_host, port):
 
     def int_handler(signum, frame):
         logger.error("int_handler. Received signal = {}".format(signum))
+        # ToDo: use different strategies for SIG_INT and SIG_TERM(more aggressive - close socket)
         if sock:
-            logger.error("Gracefully close socket")
-            sock.close()
-            exit(-1)
+            nonlocal continue_working
+            logger.error("Try to gracefully close socket")
+            continue_working = False
 
     # создаем сокет
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -33,10 +34,13 @@ def main(server_host, port):
         logger.error("Can't connect. Error message is: {}".format(e) )
         exit(-1)
 
+    # use this flag to stop calls to server
+    continue_working = True
+
     signal.signal(signal.SIGINT, int_handler)
     signal.signal(signal.SIGTERM, int_handler)
 
-    while True:
+    while continue_working:
 
         try:
             # отправляем сообщение

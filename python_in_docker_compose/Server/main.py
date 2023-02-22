@@ -46,6 +46,8 @@ async def handle_client(client):
 async def shutdown(sig, loop):
     logger.error('Received signal {0}'.format(sig.name))
 
+    # ToDo: use different strategies for SIG_INT and SIG_TERM(more aggressive - ?)
+
     tasks = [task for task in asyncio.all_tasks() if task is not
              asyncio.current_task()]
     list(map(lambda task: task.cancel(), tasks))
@@ -88,6 +90,8 @@ async def run_server(host, port, conn_count):
 
 
 if __name__ == "__main__":
+
+    # ToDO: use uv_loop ? Currently I need ability to debug. Speed is not a question
 
     debug_port = os.getenv('debug_port')
     if debug_port:
