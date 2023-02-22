@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+
+/*
+   StringRequest represents simple request
+ */
+
+message StringRequest {
+  uint32 request_id = 1;
+  string message = 2 ;
+}
+
+/*
+   StringResponse represents simple request.
+   resuest_id field is reserved for async function
+ */
+
+message  StringResponse {
+  uint32 request_id = 1;
+  string message = 2;
+}
+
+service SimpleService{
+  /*
+     Simple sync function
+  */
+  rpc ConvertToUpperCase(StringRequest) returns (StringResponse) {}
+}
+
