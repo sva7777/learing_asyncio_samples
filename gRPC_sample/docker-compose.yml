@@ -5,7 +5,7 @@ networks:
         driver: bridge
 
 services:
-    socket_server:
+    grpc_server:
         build: 
             context: ./Server
             target: debug
@@ -16,12 +16,11 @@ services:
         ports:
             - 5678:5678
         environment:
-            - port_to_listen=55000
+            - port_to_listen=50051
             - server_host=0.0.0.0
-            - conn_count=10
             - debug_port=5678
             - wait_for_debuger_connection=0
-            - logger_level=50
+            - logger_level=10
         networks:
             - grpc_network
 
@@ -35,10 +34,11 @@ services:
                 condition: none
         container_name: grpc_client1
         environment:
-            - server_port=55000
-            - server_host=socket_server
+            - server_port=50051
+            - server_host=grpc_server
             - debug_port=5679
             - wait_for_debuger_connection=0
+            - logger_level=10
         ports:
             - 5679:5679
         networks:
@@ -55,10 +55,11 @@ services:
                 condition: none
         container_name: grpc_client2
         environment:
-            - server_port=55000
-            - server_host=socket_server
+            - server_port=50051
+            - server_host=grpc_server
             - debug_port=5680
             - wait_for_debuger_connection=0
+            - logger_level=10
         ports:
             - 5680:5680
         networks:

@@ -4,7 +4,7 @@ import logging
 from sys import stdout
 
 import sys, os
-sys.path.insert(0, os.path.abspath('..'))
+
 import service_pb2
 import service_pb2_grpc
 
@@ -82,10 +82,16 @@ if __name__ == '__main__':
         if wait_for_debuger_connection and int(wait_for_debuger_connection) != 0:
             debugpy.wait_for_client()
 
-
     logger_level = os.getenv('logger_level')
     if not logger_level:
         logger_level = logging.DEBUG
+    else:
+        # int and string are supported as log level. Convert string(from evn var) to int if necessary
+        try:
+            logger_level = int(logger_level)
+        except Exception:
+            # It seems log level set by full name
+            pass
 
     # Define logger
     logger = logging.getLogger('mylogger')
@@ -93,7 +99,9 @@ if __name__ == '__main__':
     try:
         logger.setLevel(logger_level)  # set logger level
     except Exception as e:
-        logger.setLevel(logging.WARNING)
+        logger.setLevel(logging.DEBUG)
+        logger.error("Error {} of setting log level = {}".format(e,logger_level))
+
 
     logFormatter = logging.Formatter \
         ("%(name)-12s %(asctime)s %(levelname)-8s %(filename)s:%(funcName)s %(message)s")
