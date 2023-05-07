@@ -1,9 +1,12 @@
+import time
 from confluent_kafka import Consumer
 
 ################
 
 #ToDo: make consumer group configurable
-c = Consumer({'bootstrap.servers': 'localhost:9092', 'group.id': 'python-consumer', 'auto.offset.reset': 'earliest'})
+
+# Manually commit messages
+c = Consumer({'bootstrap.servers': 'localhost:9092', 'group.id': 'python-consumer', 'auto.offset.reset': 'earliest', 'enable.auto.commit': 'false'} )
 
 print('Available topics to consume: ', c.list_topics().topics)
 
@@ -22,6 +25,12 @@ def main():
             continue
         data = msg.value().decode('utf-8')
         print(data)
+
+        # break program execution during this time to test functionality of __consumer_offsets
+        time.sleep(5)
+
+        #Manually commit messages
+        c.commit(msg)
     c.close()
 
 

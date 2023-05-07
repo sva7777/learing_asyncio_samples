@@ -47,7 +47,7 @@ def main():
         p.poll(1)
         p.produce('user-tracker', m.encode('utf-8'), callback=receipt)
         p.flush()
-        time.sleep(3)
+        time.sleep(2)
 
 
 if __name__ == '__main__':
