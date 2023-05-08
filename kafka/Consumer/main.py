@@ -15,6 +15,7 @@ c.subscribe(['user-tracker'])
 
 ################
 
+
 def main():
     while True:
         msg = c.poll(1.0)  # timeout
@@ -33,6 +34,7 @@ def main():
         c.commit(msg)
     c.close()
 
+# ToDo: handle signals and other interrupts
 
 if __name__ == '__main__':
     main()

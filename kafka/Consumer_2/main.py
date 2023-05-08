@@ -24,6 +24,7 @@ def main():
         print(data)
     c.close()
 
+# ToDo: handle signals and other interrupts
 
 if __name__ == '__main__':
     main()
