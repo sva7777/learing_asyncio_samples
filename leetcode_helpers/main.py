@@ -34,3 +34,9 @@ def ConvertListToLinkedList(list_to_covert):
         node = ListNode(item,tempItem)
         tempItem = node
     return tempItem
+
+def printLinkedList(head):
+    while head:
+        print(head.val, end="")
+        head = head.next
+    print("")
