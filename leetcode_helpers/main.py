@@ -21,3 +21,16 @@ def ConvertListToBinaryTree(items):
         return node
 
     return inner()
+
+
+class ListNode:
+    def __init__(self, val=0, next=None):
+        self.val = val
+        self.next = next
+
+def ConvertListToLinkedList(list_to_covert):
+    tempItem = None
+    for item in reversed(list_to_covert):
+        node = ListNode(item,tempItem)
+        tempItem = node
+    return tempItem
