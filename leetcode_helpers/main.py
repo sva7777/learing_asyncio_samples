@@ -6,21 +6,22 @@ class TreeNode:
 
 
 def ConvertListToBinaryTree(items):
-    n = len(items)
 
-    if n == 0:
-        return None
+    root_node = TreeNode(items[0])
+    nodes = [root_node]
+    for i, x in enumerate(items[1:]):
+        if x is None:
+            continue
+        parent_node = nodes[i // 2]
+        is_left = (i % 2 == 0)
+        node = TreeNode(x)
+        if is_left:
+            parent_node.left = node
+        else:
+            parent_node.right = node
+        nodes.append(node)
 
-    def inner(index: int = 0) -> TreeNode:
-        if n <= index or items[index] is None:
-            return None
-
-        node = TreeNode(items[index])
-        node.left = inner(2 * index + 1)
-        node.right = inner(2 * index + 2)
-        return node
-
-    return inner()
+    return root_node
 
 
 class ListNode:
