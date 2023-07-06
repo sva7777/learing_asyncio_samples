@@ -7,6 +7,9 @@ class TreeNode:
 
 def ConvertListToBinaryTree(items):
 
+    if not items:
+        return None
+
     root_node = TreeNode(items[0])
     nodes = [root_node]
     for i, x in enumerate(items[1:]):
