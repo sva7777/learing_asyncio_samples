@@ -3,25 +3,27 @@ import selectors
 
 selector = selectors.DefaultSelector()
 
-#domain:5000
+# domain:5000
+
 
 def server():
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR,1)
-    server_socket.bind(('localhost', 5000))
+    server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    server_socket.bind(("localhost", 5000))
     server_socket.listen()
 
-    selector.register(fileobj=server_socket, events=selectors.EVENT_READ, data = accept_connection )
+    selector.register(
+        fileobj=server_socket, events=selectors.EVENT_READ, data=accept_connection
+    )
 
 
 def accept_connection(server_socket):
     client_socket, addr = server_socket.accept()
-    print('Connection from', addr)
+    print("Connection from", addr)
 
-    selector.register(fileobj= client_socket, events=selectors.EVENT_READ, data=send_message )
-
-
-
+    selector.register(
+        fileobj=client_socket, events=selectors.EVENT_READ, data=send_message
+    )
 
 
 def send_message(client_socket):
@@ -37,7 +39,7 @@ def send_message(client_socket):
 
 def event_loop():
     while True:
-        events = selector.select() # (key, EVENTS)
+        events = selector.select()  # (key, EVENTS)
 
         # SelectorKey
         # fileobj
@@ -49,6 +51,6 @@ def event_loop():
             callback(key.fileobj)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     server()
     event_loop()

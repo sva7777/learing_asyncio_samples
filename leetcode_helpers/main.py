@@ -6,7 +6,6 @@ class TreeNode:
 
 
 def ConvertListToBinaryTree(items):
-
     if not items:
         return None
 
@@ -16,7 +15,7 @@ def ConvertListToBinaryTree(items):
         if x is None:
             continue
         parent_node = nodes[i // 2]
-        is_left = (i % 2 == 0)
+        is_left = i % 2 == 0
         node = TreeNode(x)
         if is_left:
             parent_node.left = node
@@ -32,12 +31,14 @@ class ListNode:
         self.val = val
         self.next = next
 
+
 def ConvertListToLinkedList(list_to_covert):
     tempItem = None
     for item in reversed(list_to_covert):
-        node = ListNode(item,tempItem)
+        node = ListNode(item, tempItem)
         tempItem = node
     return tempItem
+
 
 def printLinkedList(head):
     while head:

@@ -6,6 +6,7 @@ def coroutine(func):
         g = func(*args, **kwargs)
         g.send(None)
         return g
+
     return inner
 
 
@@ -15,18 +16,19 @@ class BlaBlaException(Exception):
 
 def subgen():
     while True:
-        try :
+        try:
             message = yield
-        except StopIteration :
+        except StopIteration:
             print("Ku-Ku")
             break
         else:
             print("........", message)
     return "Returned from subgen()"
 
+
 @coroutine
 def delegator(g):
-    #while True:
+    # while True:
     #    try:
     #        data = yield
     #        g.send(data)
@@ -42,7 +44,7 @@ g = delegator(sg)
 g.send("vasily")
 g.throw(StopIteration)
 
-#print (next(g))
-#print (next(g))
-#print (next(g))
-#print (next(g))
+# print (next(g))
+# print (next(g))
+# print (next(g))
+# print (next(g))

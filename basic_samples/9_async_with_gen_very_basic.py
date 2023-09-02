@@ -4,23 +4,22 @@ from time import sleep
 queue = []
 
 
-
 def counter():
-    counter =0
+    counter = 0
 
     while True:
         print(counter)
-        counter +=1
+        counter += 1
         yield
+
 
 def printer():
-    counter =0
+    counter = 0
     while True:
-        if counter %3 ==0:
+        if counter % 3 == 0:
             print("Bang!")
-        counter +=1
+        counter += 1
         yield
-
 
 
 def main():
@@ -31,7 +30,7 @@ def main():
         sleep(0.5)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     g1 = counter()
     queue.append(g1)
     g2 = printer()

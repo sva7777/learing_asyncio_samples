@@ -8,9 +8,10 @@ def gen1(s):
 
 def gen_filename():
     while True:
-        pattern = 'file-{}.jpeg'
-        t= int (time() * 1000)
+        pattern = "file-{}.jpeg"
+        t = int(time() * 1000)
         yield pattern.format(str(t))
+
 
 def gen2(n):
     for i in range(n):
@@ -26,7 +27,7 @@ while tasks:
     task = tasks.pop(0)
 
     try:
-        i= next(task)
+        i = next(task)
         print(i)
         tasks.append(task)
     except StopIteration:

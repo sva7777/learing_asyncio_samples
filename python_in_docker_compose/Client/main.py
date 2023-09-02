@@ -8,7 +8,6 @@ from sys import stdout
 
 
 def main(server_host, port):
-
     def int_handler(signum, frame):
         logger.error("int_handler. Received signal = {}".format(signum))
         # ToDo: use different strategies for SIG_INT and SIG_TERM(more aggressive - close socket)
@@ -25,13 +24,12 @@ def main(server_host, port):
     logger.info("server_host: {}".format(server_host))
     logger.info("server_port: {}".format(port))
 
-
     # подключемся к серверному сокету
     try:
         sock.connect((server_host, port))
     except Exception as e:
         sock.close()
-        logger.error("Can't connect. Error message is: {}".format(e) )
+        logger.error("Can't connect. Error message is: {}".format(e))
         exit(-1)
 
     # use this flag to stop calls to server
@@ -41,17 +39,16 @@ def main(server_host, port):
     signal.signal(signal.SIGTERM, int_handler)
 
     while continue_working:
-
         try:
             # отправляем сообщение
-            sock.send(bytes('Hello, world', encoding = 'UTF-8'))
+            sock.send(bytes("Hello, world", encoding="UTF-8"))
         except Exception as e:
             logger.error("Exception when send data = {}".format(e))
             break
 
         try:
             # читаем ответ от серверного сокета
-            data = sock.recv(1024).decode('utf8')
+            data = sock.recv(1024).decode("utf8")
         except Exception as e:
             logger.error("Exception when recv data = {}".format(e))
             break
@@ -65,17 +62,17 @@ def main(server_host, port):
 
 
 if __name__ == "__main__":
-
-    debug_port = os.getenv('debug_port')
+    debug_port = os.getenv("debug_port")
     if debug_port:
         import debugpy
+
         debugpy.listen(("0.0.0.0", int(debug_port)))
 
-        wait_for_debuger_connection = os.getenv('wait_for_debuger_connection')
+        wait_for_debuger_connection = os.getenv("wait_for_debuger_connection")
         if wait_for_debuger_connection and int(wait_for_debuger_connection) != 0:
             debugpy.wait_for_client()
 
-    logger_level = os.getenv('logger_level')
+    logger_level = os.getenv("logger_level")
     if not logger_level:
         logger_level = logging.DEBUG
     else:
@@ -86,9 +83,8 @@ if __name__ == "__main__":
             # It seems log level set by full name
             pass
 
-
     # Define logger
-    logger = logging.getLogger('mylogger')
+    logger = logging.getLogger("mylogger")
 
     try:
         logger.setLevel(logger_level)  # set logger level
@@ -96,26 +92,25 @@ if __name__ == "__main__":
         logger.setLevel(logging.DEBUG)
         logger.error("Error {} of setting log level = {}".format(e, logger_level))
 
-    logFormatter = logging.Formatter \
-        ("%(name)-12s %(asctime)s %(levelname)-8s %(filename)s:%(funcName)s %(message)s")
+    logFormatter = logging.Formatter(
+        "%(name)-12s %(asctime)s %(levelname)-8s %(filename)s:%(funcName)s %(message)s"
+    )
     consoleHandler = logging.StreamHandler(stdout)  # set streamhandler to stdout
     consoleHandler.setFormatter(logFormatter)
     logger.addHandler(consoleHandler)
 
     logger.info("Client is started")
 
-
-    port = os.getenv('server_port')
+    port = os.getenv("server_port")
     if not port:
-        logger.warning("env variable server_port is not specified. 55000 is used" )
+        logger.warning("env variable server_port is not specified. 55000 is used")
         port = 55000
     port = int(port)
 
-    server_host = os.getenv('server_host')
+    server_host = os.getenv("server_host")
     if not server_host:
         logger.warning("env variable server_host is not specified. localhost is used")
         server_host = "socket_server"
-
 
     main(server_host, port)
 
