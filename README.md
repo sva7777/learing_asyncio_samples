@@ -19,8 +19,8 @@ root= ConvertListToBinaryTree(root)
 ```
 
 Same for linked list. 
-Leetcode format to represent linked list: head = [1,2,3,4,5]  
-The ConvertListToLinkedList function takes a list of items as input and converts it into a linked list.  
+Leetcode format to represent linked list: `head = [1,2,3,4,5]`  
+The `ConvertListToLinkedList` function takes a list of items as input and converts it into a linked list.  
 It iterates over the items in reverse order and creates a new node for each item, with the current item as its value and the previous node as its next node.  
 The function returns the head of the linked list.  
 
