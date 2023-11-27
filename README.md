@@ -7,7 +7,6 @@ Find PI based on random generator
 # leetcode_helpers  
 Leecode site have problems related to linked list and binary tree.
 For example, input is binary tree like this  
-Leetcode specifies binary tree like root = [3,9,20,null,null,15,7]  
 ![image](https://github.com/sva7777/learning_python/assets/102506105/74367451-e583-401b-a6c5-42f625755cad)  
 Leetcode specifies binary tree like `root = [3,9,20,null,null,15,7]`  
 The `ConvertListToBinaryTree` function takes a list of items as input and converts it into a binary tree  
