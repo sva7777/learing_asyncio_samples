@@ -103,11 +103,11 @@ if __name__ == "__main__":
     if not logger_level:
         logger_level = logging.DEBUG
     else:
-        # int and string are supported as log level. Convert string(from evn var) to int if necessary
+        # check is user specified int debug_level. If so convert string to int
         try:
             logger_level = int(logger_level)
-        except Exception:
-            # It seems log level set by full name
+        except ValueError:
+            # It seems log level set by full name. Do nothing
             pass
 
     # Define logger
@@ -115,9 +115,10 @@ if __name__ == "__main__":
 
     try:
         logger.setLevel(logger_level)  # set logger level
-    except Exception as e:
+    except ValueError as e:
         logger.setLevel(logging.DEBUG)
         logger.error("Error {} of setting log level = {}".format(e, logger_level))
+        logger.warning("use logging level == DEBUG")
 
     logFormatter = logging.Formatter(
         "%(name)-12s %(asctime)s %(levelname)-8s %(filename)s:%(funcName)s %(message)s"
