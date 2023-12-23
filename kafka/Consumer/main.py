@@ -1,31 +1,32 @@
 import time
 from confluent_kafka import Consumer
+import logging, os
+from sys import stdout
+import signal
 
-################
+def main(c):
+    def int_handler(signum, frame):
+        nonlocal continue_working
+        logger.error("int_handler. Received signal = {}".format(signum))
+        # ToDo: use different strategies for SIG_INT and SIG_TERM(more aggressive ?)
+        logger.error("stop consumer")
+        continue_working = False
 
-#ToDo: make consumer group configurable
+    # use this flag to stop consumer
+    continue_working = True
 
-# Manually commit messages
-c = Consumer({'bootstrap.servers': 'localhost:9092', 'group.id': 'python-consumer', 'auto.offset.reset': 'earliest', 'enable.auto.commit': 'false'} )
+    signal.signal(signal.SIGINT, int_handler)
+    signal.signal(signal.SIGTERM, int_handler)
 
-print('Available topics to consume: ', c.list_topics().topics)
-
-c.subscribe(['user-tracker'])
-
-
-################
-
-
-def main():
-    while True:
+    while continue_working:
         msg = c.poll(1.0)  # timeout
         if msg is None:
             continue
         if msg.error():
-            print('Error: {}'.format(msg.error()))
+            logger.error('Error: {}'.format(msg.error()))
             continue
         data = msg.value().decode('utf-8')
-        print(data)
+        logger.info(data)
 
         # break program execution during this time to test functionality of __consumer_offsets
         time.sleep(5)
@@ -34,7 +35,47 @@ def main():
         c.commit(msg)
     c.close()
 
-# ToDo: handle signals and other interrupts
-
 if __name__ == '__main__':
-    main()
+    logger_level = os.getenv("logger_level")
+
+    if not logger_level:
+        logger_level = logging.DEBUG
+    else:
+        # check is user specified int debug_level. If so convert string to int
+        try:
+            logger_level = int(logger_level)
+        except ValueError:
+            # It seems log level set by full name. Do nothing
+            pass
+
+    # Define logger
+    logger = logging.getLogger("mylogger")
+    try:
+        logger.setLevel(logger_level)  # set logger level
+    except ValueError as e:
+        logger.setLevel(logging.DEBUG)
+        logger.error("Error {} of setting log level = {}".format(e, logger_level))
+        logger.warning("use logging level == DEBUG")
+
+
+    logFormatter = logging.Formatter(
+        "%(name)-12s %(asctime)s %(levelname)-8s %(filename)s:%(funcName)s %(message)s"
+    )
+
+    consoleHandler = logging.StreamHandler(stdout)  # set streamhandler to stdout
+    consoleHandler.setFormatter(logFormatter)
+    logger.addHandler(consoleHandler)
+
+    ################
+    # ToDo: make consumer group configurable
+
+    # Manually commit messages
+    c = Consumer({'bootstrap.servers': 'localhost:9092', 'group.id': 'python-consumer', 'auto.offset.reset': 'earliest',
+                  'enable.auto.commit': 'false'})
+
+    logger.info('Available topics to consume: ', c.list_topics().topics)
+
+    c.subscribe(['user-tracker'])
+    ################
+
+    main(c)
