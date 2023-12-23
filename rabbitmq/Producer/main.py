@@ -3,34 +3,53 @@ import datetime
 import sys, os
 import logging
 from sys import stdout
+import signal
 
 # ToDo: handle signals
 # ToDo: get confirmation from RabbitMQ
 
 
-def main():
+def main(number_of_messages):
+    def int_handler(signum, frame):
+        nonlocal continue_working
+        logger.error("int_handler. Received signal = {}".format(signum))
+        # ToDo: use different strategies for SIG_INT and SIG_TERM(more aggressive ?)
+        logger.error("stop sending messages")
+        continue_working = False
+
 
     connection = pika.BlockingConnection(pika.ConnectionParameters("localhost"))
     channel = connection.channel()
 
     channel.queue_declare(queue="hello")
 
-    # set up expire
-    now = datetime.datetime.now()
-    expire = 1000 * int((now.replace(minute=now.minute + 1) - now).total_seconds())
+    # use this flag to stop sending messages
+    continue_working = True
+
+    signal.signal(signal.SIGINT, int_handler)
+    signal.signal(signal.SIGTERM, int_handler)
 
 
-    channel.basic_publish(
-        exchange="",
-        routing_key="hello",
-        body="Hello World!",
-        properties=pika.BasicProperties(
-            # job expiration (milliseconds from now), must be string, handled by rabbitmq)
-            expiration=str(expire)
-        ),
-    )
+    for num in range (number_of_messages+1):
 
-    logger.info(" [x] Sent 'Hello World!'")
+        if continue_working == False:
+            break
+
+        # set up expire
+        now = datetime.datetime.now()
+        expire = 1000 * int((now.replace(minute=now.minute + 1) - now).total_seconds())
+
+        channel.basic_publish(
+            exchange="",
+            routing_key="hello",
+            body="Hello World! number ="+ str(num),
+            properties=pika.BasicProperties(
+                # job expiration (milliseconds from now), must be string, handled by rabbitmq)
+                expiration=str(expire)
+            ),
+        )
+
+        logger.info(" [x] Sent message number = "+str(num))
 
     connection.close()
 
@@ -67,11 +86,5 @@ if __name__ == "__main__":
     consoleHandler.setFormatter(logFormatter)
     logger.addHandler(consoleHandler)
 
-    try:
-        main()
-    except KeyboardInterrupt:
-        logger.info("Interrupted")
-        try:
-            sys.exit(1)
-        except SystemExit:
-            os._exit(1)
+
+    main(100000)

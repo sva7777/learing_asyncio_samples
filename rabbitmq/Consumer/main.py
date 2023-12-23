@@ -2,26 +2,36 @@ import pika
 import sys, os, time
 import logging
 from sys import stdout
-
+import signal
 
 def main():
+    def int_handler(signum, frame):
+        nonlocal continue_working
+        logger.error("int_handler. Received signal = {}".format(signum))
+        # ToDo: use different strategies for SIG_INT and SIG_TERM(more aggressive - ?)
+        logger.error("stop receiving messages")
+        continue_working = False
+
     connection = pika.BlockingConnection(pika.ConnectionParameters(host="localhost"))
     channel = connection.channel()
 
     channel.queue_declare(queue="hello")
 
-    def callback(ch, method, properties, body):
-        logger.info(" [x] Received %r" % body)
-        time.sleep(15)
-        ch.basic_ack(delivery_tag=method.delivery_tag)
+    # use this flag to stop reading messages
+    continue_working = True
 
-    channel.basic_consume(queue="hello", on_message_callback=callback, auto_ack=False)
+    signal.signal(signal.SIGINT, int_handler)
+    signal.signal(signal.SIGTERM, int_handler)
 
-    logger.info(" [*] Waiting for messages. To exit press CTRL+C")
-    channel.start_consuming()
+    # ToDo: switch to async implementation
+    while continue_working:
+
+        method_frame, header_frame, body = channel.basic_get('hello')
+        if method_frame:
+            logger.info(" [x] Received %r" % body)
+            channel.basic_ack(method_frame.delivery_tag)
 
 
-# ToDo: handle signals
 
 if __name__ == "__main__":
     logger_level = os.getenv("logger_level")
@@ -53,13 +63,6 @@ if __name__ == "__main__":
     consoleHandler.setFormatter(logFormatter)
     logger.addHandler(consoleHandler)
 
-
-    try:
-        logger.info("Start Consumer")
-        main()
-    except KeyboardInterrupt:
-        logger.info("Interrupted")
-        try:
-            sys.exit(1)
-        except SystemExit:
-            os._exit(1)
+    logger.info("Start consumer")
+    main()
+    logger.info("Stop consumer")
