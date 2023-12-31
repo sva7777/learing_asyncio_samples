@@ -29,8 +29,6 @@ def receipt(err, msg):
 #####################
 print("Kafka Producer has been initiated...")
 
-# ToDo: handle signals and other interrupts
-
 
 def main():
     def int_handler(signum, frame):
