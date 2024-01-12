@@ -17,17 +17,15 @@ p = Producer({"bootstrap.servers": "localhost:9092"})
 
 def receipt(err, msg):
     if err:
-        print("Error: {}".format(err))
+        logger.error("Error: {}".format(err))
     else:
         message = "Produced message on topic {} with value of {}\n".format(
             msg.topic(), msg.value().decode("utf-8")
         )
         logger.info(message)
-        print(message)
 
 
-#####################
-print("Kafka Producer has been initiated...")
+
 
 
 def main():
@@ -43,6 +41,9 @@ def main():
 
     signal.signal(signal.SIGINT, int_handler)
     signal.signal(signal.SIGTERM, int_handler)
+
+
+    logger.info("Kafka Producer has been initiated...")
 
     for i in range(100):
         if continue_working == False:
