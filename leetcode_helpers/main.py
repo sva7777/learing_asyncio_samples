@@ -1,3 +1,7 @@
+from typing import Optional
+from typing import List
+
+
 class TreeNode:
     def __init__(self, val=0, left=None, right=None):
         self.val = val
@@ -5,7 +9,7 @@ class TreeNode:
         self.right = right
 
 
-def ConvertListToBinaryTree(items):
+def ConvertListToBinaryTree(items: List[int]) -> Optional[TreeNode]:
     if not items:
         return None
 
@@ -32,7 +36,7 @@ class ListNode:
         self.next = next
 
 
-def ConvertListToLinkedList(list_to_covert):
+def ConvertListToLinkedList(list_to_covert: List[int]) -> Optional[ListNode]:
     tempItem = None
     for item in reversed(list_to_covert):
         node = ListNode(item, tempItem)
@@ -40,8 +44,11 @@ def ConvertListToLinkedList(list_to_covert):
     return tempItem
 
 
-def printLinkedList(head):
+def printLinkedList(head: Optional[ListNode]) -> None:
     while head:
         print(head.val, end="")
         head = head.next
+        if head:
+            print("->", end="")
     print("")
+
